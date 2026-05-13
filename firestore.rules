@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Validation for UserProgress
+    function isValidUserProgress(data) {
+      return data.keys().hasAll(['userId', 'coins', 'completedLevels', 'purchasedLevels', 'lastPlayedLevelIdx', 'lastUpdated'])
+        && data.keys().size() <= 8
+        && data.userId is string
+        && data.coins is int
+        && data.completedLevels is list
+        && data.purchasedLevels is list
+        && data.lastPlayedLevelIdx is int
+        && data.lastUpdated is timestamp
+        && data.userId == request.auth.uid;
+    }
+
+    // User Progress collection
+    match /user_progress/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProgress(incoming());
+      allow update: if isOwner(userId) && isValidUserProgress(incoming())
+        && (
+          // Allow updating progress fields
+          incoming().diff(existing()).affectedKeys().hasAny(['coins', 'completedLevels', 'purchasedLevels', 'lastPlayedLevelIdx', 'lastUpdated', 'dailyChallengeDate'])
+        );
+      allow delete: if false; // Progress should not be deleted by client
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Ball Sort Puzzle",
+  "description": "A challenging color-sorting puzzle game. Organize the balls so each tube contains only one color.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

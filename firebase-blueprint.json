@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "UserProgress": {
+      "title": "User Progress",
+      "description": "Stores user's game progress and currency",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user" },
+        "coins": { "type": "integer", "description": "Total coins collected" },
+        "completedLevels": { "type": "array", "description": "List of indices of completed levels" },
+        "purchasedLevels": { "type": "array", "description": "List of indices of purchased levels" },
+        "lastPlayedLevelIdx": { "type": "integer", "description": "Index of the last played level" },
+        "lastUpdated": { "type": "string", "format": "date-time", "description": "Server timestamp of last sync" },
+        "dailyChallengeDate": { "type": "string", "description": "Last date the daily challenge was completed (YYYY-MM-DD)" }
+      },
+      "required": ["userId", "coins", "completedLevels", "purchasedLevels", "lastPlayedLevelIdx", "lastUpdated"]
+    }
+  },
+  "firestore": {
+    "/user_progress/{userId}": {
+      "schema": "UserProgress",
+      "description": "Main progress storage for each user"
+    }
+  }
+}
